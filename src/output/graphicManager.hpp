@@ -13,6 +13,7 @@ std::map<std::string, std::vector<std::vector<int>>> standardShapeMap = {
 
 class windowObject {
     private:
+        bool allowRenderOutsideBorder = false; //without this you can have ugly pixels outside the window.
         int width;
         int height;
         int colour; //Current Console Colour;
@@ -39,12 +40,14 @@ class windowObject {
         void refreshWindow();
 
         windowObject(int widthArg, int heightArg, int bgColour, std::vector<int> originArg={0,0}) {
-            setCursor(false);
-            
-            
             width = widthArg; height = heightArg;
             windowBgColour = bgColour;
             origin = originArg;
+
+            setCursor(false);
+            clearScreen();
+            updateBorder(origin.at(0), origin.at(0)+width, origin.at(1), origin.at(1)+height, allowRenderOutsideBorder);
+            
             refreshWindow();
         }
 };
