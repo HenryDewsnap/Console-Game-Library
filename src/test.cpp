@@ -5,10 +5,18 @@
 
 int main() {
     windowObject win(25,25,1,{0,0});
+
+    for (int i=0; i<25; i++) {
+        win.updateFgColour(i%16);
+        win.drawLine({{i,0},{i,24}});
+    }
+
+
+    /*    
     win.updateFgColour(4);
 
     for (int i=0; i<6; i++) {
-        win.loadStandardShapeToBuffer("square", {i*4,i*4}, 4);
+    win.loadStandardShapeToBuffer("square", {i*4,i*4}, 4);
     }
 
     win.plotBuffer();
@@ -27,6 +35,5 @@ int main() {
 
     win.updateFgColour(8);
     win.drawLine({{5,3},{17,21}});
-
-    std::cin.get();
+    */
 }
