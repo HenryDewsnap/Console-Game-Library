@@ -24,7 +24,14 @@
 //----------------------//
 
 int xMultiplier = 2; //This multiples the coord of any x location by 2 so you
+bool renderOutsideBorder = false;
+int xMax, xMin;
+int yMax, yMin;
 
+void updateBorder(int xMinArg, int xMaxArg, int yMinArg, int yMaxArg, bool ROBArg) {
+    renderOutsideBorder = ROBArg;
+    xMin = xMinArg; xMax = xMaxArg; yMin = yMinArg; yMax = yMaxArg;
+}
 
 
 void setCursor(bool visibility) {
@@ -36,6 +43,13 @@ void setCursor(bool visibility) {
 
 
 void gotoxy(int x, int y) {
+    
+    if (renderOutsideBorder != true) {
+        if (x >= xMax) { x = xMax-1; }
+        if (x < xMin)  { x = xMin;   }
+        if (y >= yMax) { y = yMax-1; }
+        if (y < yMin)  { y = yMin;   }
+    }
     
     COORD coord;
     coord.X = x * xMultiplier; coord.Y = y;
