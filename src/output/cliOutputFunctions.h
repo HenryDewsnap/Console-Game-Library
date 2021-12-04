@@ -23,15 +23,25 @@
 //     15 = White
 //----------------------//
 
-int xMultiplier = 2; //This multiples the coord of any x location by 2 so you
-bool renderOutsideBorder = false;
-int xMax, xMin;
-int yMax, yMin;
+class outputConditions {
+    public:
+        
+        int xMax, xMin;
+        int yMax, yMin;
+        bool exeption;
 
-void updateBorder(int xMinArg, int xMaxArg, int yMinArg, int yMaxArg, bool ROBArg) {
-    renderOutsideBorder = ROBArg;
-    xMin = xMinArg; xMax = xMaxArg; yMin = yMinArg; yMax = yMaxArg;
-}
+        void setConditions(bool exeptionArg, int xMaxArg, int xMinArg, int yMaxArg, int yMinArg) {
+            xMax = xMaxArg; xMin = xMinArg; yMax = yMaxArg; yMin = yMinArg; exeption = exeptionArg;
+        }
+};
+
+
+
+bool renderOutsideBorder = false;
+int xMultiplier = 2; //This multiples the coord of any x location by 2 so you
+
+
+
 
 
 void setCursor(bool visibility) {
@@ -42,14 +52,14 @@ void setCursor(bool visibility) {
 
 
 
-void gotoxy(int x, int y, bool exception) {
+void gotoxy(int x, int y, outputConditions conditionObj) {
     
-    if (exception != true) {
+    if (conditionObj.exeption != true) {
         if (renderOutsideBorder != true) {
-            if (x >= xMax) { x = xMax-1; }
-            if (x < xMin)  { x = xMin;   }
-            if (y >= yMax) { y = yMax-1; }
-            if (y < yMin)  { y = yMin;   }
+            if (x >= conditionObj.xMax) { x = conditionObj.xMax-1; }
+            if (x < conditionObj.xMin)  { x = conditionObj.xMin;   }
+            if (y >= conditionObj.yMax) { y = conditionObj.yMax-1; }
+            if (y < conditionObj.yMin)  { y = conditionObj.yMin;   }
         }
     }
     COORD coord;
@@ -71,24 +81,24 @@ void setFgAndBgColour(int fg, int bg) {
 }
 
 //https://www.fileformat.info/info/unicode/block/geometric_shapes/list.htm
-void plotPixel(int x, int y, int colour) {
+void plotPixel(int x, int y, int colour, outputConditions conditionObj) {
     setColour(colour);
-    gotoxy(x,y, false); std::cout<<"#";
+    gotoxy(x,y, conditionObj); std::cout<<"#";
     return;
 }
 
 
-void plotSolidRectangle(int x1, int y1, int x2, int y2, int colour, std::string bgPixel) {
+void plotSolidRectangle(int x1, int y1, int x2, int y2, int colour, std::string bgPixel, outputConditions conditionObj) {
     setColour(colour);
     for (int y=y1; y<y2; y++) {
         for (int x=x1; x<x2; x++) {
-            gotoxy(x,y, false); std::cout << bgPixel;
+            gotoxy(x,y, conditionObj); std::cout << bgPixel;
         }
     }
 }
 
 
-void plotLine(int x0, int y0, int x1, int y1, int colour) { //DDA Line Algo
+void plotLine(int x0, int y0, int x1, int y1, int colour, outputConditions conditionObj) { //DDA Line Algo
     int dx = x1-x0;
     int dy = y1-y0;
 
@@ -101,7 +111,7 @@ void plotLine(int x0, int y0, int x1, int y1, int colour) { //DDA Line Algo
     float Y = y0;
 
     for (int i=0; i<=steps; i++) {
-        plotPixel((int)X, (int)Y, colour);
+        plotPixel((int)X, (int)Y, colour, conditionObj);
         X += Xinc;
         Y += Yinc;
     }
@@ -109,18 +119,3 @@ void plotLine(int x0, int y0, int x1, int y1, int colour) { //DDA Line Algo
 
 
 
-void clearScreen(){
-    COORD coordScreen = { 0, 0 };
-    DWORD cCharsWritten;
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    DWORD dwConSize;
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    GetConsoleScreenBufferInfo(hConsole, &csbi);
-    dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
-    FillConsoleOutputCharacter(hConsole, TEXT(' '), dwConSize, coordScreen, &cCharsWritten);
-    GetConsoleScreenBufferInfo(hConsole, &csbi);
-    FillConsoleOutputAttribute(hConsole, csbi.wAttributes, dwConSize, coordScreen, &cCharsWritten);
-    SetConsoleCursorPosition(hConsole, coordScreen);
-    return;
-}
