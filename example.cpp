@@ -9,8 +9,8 @@ class program {
         
 
     public:
-  
-  
+
+
         program() {
             clearScreen();
 
@@ -29,9 +29,9 @@ class program {
             textWindow2.renderText();
 
             windowObject window2(25, 25, 4, {45, 0});
-            window2.loadShapeToBuffer({{0,0}, {10,0}, {10,10}, {0,10}});
-            window2.loadShapeToBuffer({{0,0}, {10,10}});
-            window2.loadShapeToBuffer({{0,10}, {10,0}});
+            window2.loadShapeToBuffer({{24,24}, {10,24}, {10,10}, {24,10}});
+            window2.loadShapeToBuffer({{24,24}, {10,10}});
+            window2.loadShapeToBuffer({{24,10}, {10,24}});
             window2.plotBuffer();
 
             getchar();
