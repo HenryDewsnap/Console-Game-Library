@@ -14,6 +14,7 @@ std::map<std::string, std::vector<std::vector<int>>> standardShapeMap = {
 
 class windowObject {
     private:
+        outputConditions outputConditionObj;
         std::string stdPixel = "#";
         bool allowRenderOutsideBorder = false; //without this you can have ugly pixels outside the window.
         int width;
@@ -24,6 +25,7 @@ class windowObject {
         std::vector<std::pair<std::vector<int>, std::vector<int>>> lineBuffer;
 
     public:
+    
         void plotPoint(std::vector<int> vect);
         void drawLine(std::pair<std::vector<int>, std::vector<int>> line);
 
@@ -48,9 +50,8 @@ class windowObject {
             origin = originArg;
 
             setCursor(false);
-            clearScreen();
-            updateBorder(origin.at(0), origin.at(0)+width, origin.at(1), origin.at(1)+height, allowRenderOutsideBorder);
-            
+            outputConditionObj.setConditions(false, origin.at(0)+width, origin.at(0), origin.at(1)+height, origin.at(1));
+
             refreshWindow();
         }
 };
@@ -62,6 +63,7 @@ void windowObject::loadShapeToBuffer(std::vector<std::vector<int>> shapeVerticie
     for (std::vector<int> vert: shapeVerticies) {
         lineBuffer.push_back({{previousVert.at(0)+origin.at(0), previousVert.at(1)+origin.at(1)}, {vert.at(0)+origin.at(0), vert.at(1)+origin.at(1)}});
         previousVert = vert;
+    
     }
 }
 
@@ -77,18 +79,18 @@ void windowObject::loadStandardShapeToBuffer(std::string name, std::vector<int> 
 
 
 void windowObject::refreshWindow() {
-    plotSolidRectangle(origin.at(0), origin.at(1), origin.at(0)+width, origin.at(1)+height, windowBgColour, stdPixel);
+    plotSolidRectangle(origin.at(0), origin.at(1), origin.at(0)+width, origin.at(1)+height, windowBgColour, stdPixel, outputConditionObj);
 }
 
 
 //Low level graphical Functions:
 void windowObject::plotPoint(std::vector<int> vect) {
     if (vect.at(0) >= origin.at(0) && vect.at(0) < origin.at(0)+width   &&   vect.at(1) >= origin.at(1) && vect.at(1) < origin.at(1)+height) {
-        plotPixel(vect.at(0), vect.at(1), colour); 
+        plotPixel(vect.at(0), vect.at(1), colour, outputConditionObj); 
     }
 }
 
-void windowObject::drawLine(std::pair<std::vector<int>, std::vector<int>> line) { plotLine(line.first.at(0)+origin.at(0), line.first.at(1)+origin.at(1), line.second.at(0)+origin.at(0), line.second.at(1)+origin.at(1), colour); }
+void windowObject::drawLine(std::pair<std::vector<int>, std::vector<int>> line) { plotLine(line.first.at(0)+origin.at(0), line.first.at(1)+origin.at(1), line.second.at(0)+origin.at(0), line.second.at(1)+origin.at(1), colour, outputConditionObj); }
 
 
 //Colour Functions:
@@ -102,7 +104,7 @@ void windowObject::updateBgAndFgColour(int fg, int bg) { colour = bg*16 + fg; }
 //Higher level graphical functions:
 void windowObject::plotBuffer() {
     for (std::pair<std::vector<int>, std::vector<int>> line: lineBuffer) {
-        plotLine(line.first.at(0), line.first.at(1), line.second.at(0), line.second.at(1), colour);
+        plotLine(line.first.at(0), line.first.at(1), line.second.at(0), line.second.at(1), colour, outputConditionObj);
     }
 }
 
@@ -112,7 +114,7 @@ void windowObject::clearBuffer() { lineBuffer.clear(); }
 
 void windowObject::plotBufferIndex(int indexVal) {
     std::pair<std::vector<int>, std::vector<int>> line = lineBuffer.at(indexVal);
-    plotLine(line.first.at(0), line.first.at(1), line.second.at(0), line.second.at(1), colour);
+    plotLine(line.first.at(0), line.first.at(1), line.second.at(0), line.second.at(1), colour, outputConditionObj);
 }
 
 
@@ -126,6 +128,7 @@ void windowObject::plotBufferIndex(int indexVal) {
 
 class textWindowObject {
     private:
+        outputConditions outputConditionObj;
         std::string rawText;
         std::vector<std::string> formattedText;
 
@@ -140,6 +143,7 @@ class textWindowObject {
         void formatStringToVector(); //Autmatically called process for parsing data into diffarent lines.
 
     public:
+        
         int colour=15;
 
         void updateText(std::string newText);
@@ -148,6 +152,8 @@ class textWindowObject {
 
         textWindowObject(int widthArg, int heightArg, std::string windowNameArg, std::vector<int> originArg={0,0}) {
             width = widthArg; height = heightArg; origin = originArg; windowName = windowNameArg;
+
+            outputConditionObj.setConditions(false, origin.at(0)+width, origin.at(0), origin.at(1)+height, origin.at(1));
         }
 };
 
@@ -177,16 +183,39 @@ void textWindowObject::renderText() {
     int linePtr = 0;
     setColour(colour);
 
-    gotoxy(origin.at(0), origin.at(1), true);
+    gotoxy(origin.at(0), origin.at(1), outputConditionObj);
     setColour(4);
     std::cout << pad << "NAME: " << windowName;
     setColour(colour);
     for (std::string line: formattedText) {
-        gotoxy(origin.at(0), origin.at(1)+linePtr+1, true);
+        gotoxy(origin.at(0), origin.at(1)+linePtr+1, outputConditionObj);
         for (int i=0; i<padding; i++) {
             std::cout << pad;
         }
         std::cout << line;
         linePtr += 1;
     }
+}
+
+
+
+
+
+
+
+//Only really use to clear console before rendering.
+void clearScreen(){
+    COORD coordScreen = { 0, 0 };
+    DWORD cCharsWritten;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    DWORD dwConSize;
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    GetConsoleScreenBufferInfo(hConsole, &csbi);
+    dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+    FillConsoleOutputCharacter(hConsole, TEXT(' '), dwConSize, coordScreen, &cCharsWritten);
+    GetConsoleScreenBufferInfo(hConsole, &csbi);
+    FillConsoleOutputAttribute(hConsole, csbi.wAttributes, dwConSize, coordScreen, &cCharsWritten);
+    SetConsoleCursorPosition(hConsole, coordScreen);
+    return;
 }
