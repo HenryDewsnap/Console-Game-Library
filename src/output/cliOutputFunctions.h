@@ -42,15 +42,16 @@ void setCursor(bool visibility) {
 
 
 
-void gotoxy(int x, int y) {
+void gotoxy(int x, int y, bool exception) {
     
-    if (renderOutsideBorder != true) {
-        if (x >= xMax) { x = xMax-1; }
-        if (x < xMin)  { x = xMin;   }
-        if (y >= yMax) { y = yMax-1; }
-        if (y < yMin)  { y = yMin;   }
+    if (exception != true) {
+        if (renderOutsideBorder != true) {
+            if (x >= xMax) { x = xMax-1; }
+            if (x < xMin)  { x = xMin;   }
+            if (y >= yMax) { y = yMax-1; }
+            if (y < yMin)  { y = yMin;   }
+        }
     }
-    
     COORD coord;
     coord.X = x * xMultiplier; coord.Y = y;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
@@ -72,7 +73,7 @@ void setFgAndBgColour(int fg, int bg) {
 //https://www.fileformat.info/info/unicode/block/geometric_shapes/list.htm
 void plotPixel(int x, int y, int colour) {
     setColour(colour);
-    gotoxy(x,y); std::cout<<"#";
+    gotoxy(x,y, false); std::cout<<"#";
     return;
 }
 
@@ -81,7 +82,7 @@ void plotSolidRectangle(int x1, int y1, int x2, int y2, int colour, std::string 
     setColour(colour);
     for (int y=y1; y<y2; y++) {
         for (int x=x1; x<x2; x++) {
-            gotoxy(x,y); std::cout << bgPixel;
+            gotoxy(x,y, false); std::cout << bgPixel;
         }
     }
 }
